@@ -1,25 +1,45 @@
 package api
 
 import (
-	"io/ioutil"
-	"fmt"
-	"time"
+	mw "go_api/middleware"
 	"net/http"
+	"github.com/gorilla/mux"
+	hd "go_api/handlers"
 )
 
-var netClient = &http.Client{
-	Timeout: time.Second * 10,
+type Route struct {
+	Name        string
+	Method      string
+	Pattern     string
+	HandlerFunc http.HandlerFunc
 }
 
-func GetAllPokemons(W http.ResponseWriter, req *http.Request) {
-	response, err := netClient.Get("https://pokeapi.co/api/v2/pokemon")
-	if (err != nil) {
-		fmt.Println("Error doing the request")
+type Routes []Route
+
+
+func NewRouter() *mux.Router {
+
+	router := mux.NewRouter().StrictSlash(true)
+	for _, route := range routes {
+			var handler http.Handler
+
+			handler = route.HandlerFunc
+			handler = mw.LoggerMiddleware(handler, route.Name)
+			router.
+					Methods(route.Method).
+					Path(route.Pattern).
+					Name(route.Name).
+					Handler(route.HandlerFunc)
 	}
-	buf, err := ioutil.ReadAll(response.Body)
-	if (err != nil) {
-		fmt.Println("Error reading the body")
-	}
-	s := string(buf)
-	fmt.Println(s)
+
+	return router
+}
+
+var routes = Routes{
+	Route{
+			"Index",
+			"GET",
+			"/",
+			hd.GetAllPokemons,
+	},
 }
