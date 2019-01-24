@@ -9,8 +9,8 @@ import (
 
 var myClient = &http.Client{Timeout: 10 * time.Second}
 
-func GetJson(url string, target interface{}, traceId string) error {
-		log.Info("GET request to URL:", url, "trace-id: ", traceId)
+func GetJson(url string, target interface{}, traceID string) error {
+		log.WithField("trace-id", traceID).Info("GET request to URL:")
 		r, err := myClient.Get(url)
     if err != nil {
         return err
@@ -20,8 +20,8 @@ func GetJson(url string, target interface{}, traceId string) error {
     return json.NewDecoder(r.Body).Decode(target)
 }
 
-func SendJsonResponse (data []byte, w http.ResponseWriter, traceId string) {
-	log.Info("Sending JSON response. trace-id: ", traceId)
+func SendJsonResponse (data []byte, w http.ResponseWriter, traceID string) {
+	log.WithField("trace-id", traceID).Info("Sending JSON response")
 	w.WriteHeader(200)
 	w.Write(data)
 	return

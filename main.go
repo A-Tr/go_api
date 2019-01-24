@@ -10,5 +10,7 @@ import (
 
 func main() {
 	router := api.NewRouter()
+	log.SetFormatter(&log.JSONFormatter{})
+	
 	log.Fatal(http.ListenAndServe(":3000", router))
 }

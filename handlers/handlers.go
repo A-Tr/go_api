@@ -16,10 +16,10 @@ var netClient = &http.Client{
 func GetAllPokemons(w http.ResponseWriter, req *http.Request) {
 	traceID := uuid.Must(uuid.NewV4()).String()
 	pokeRes := new(md.PokeAPIResponse)
-	log.Info("Hello there", "trace-id: ", traceID)
+	log.WithField("trace-id", traceID).Info("HOli")
 	err := GetJson("https://pokeapi.co/api/v2/pokemon", pokeRes, traceID)
 	if err != nil {
-		log.Printf("Error doing the request", "trace-id: ", traceID)
+		log.WithField("trace-id", traceID).Error("Error doing the request")
 	}
 	data, err := json.Marshal(pokeRes)
 
