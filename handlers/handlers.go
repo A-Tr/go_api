@@ -1,27 +1,27 @@
 package handlers
 
 import (
+	"github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 	"encoding/json"
 	md "go_api/models"
-	"log"
+	"time"
 	"net/http"
 )
 
-func WrappedGetAllPokemons() {
-
+var netClient = &http.Client{
+	Timeout: time.Second * 10,
 }
 
 func GetAllPokemons(w http.ResponseWriter, req *http.Request) {
-	response, err := netClient.Get("https://pokeapi.co/api/v2/pokemon")
-	var pokeRes md.PokeAPIResponse
+	traceID := uuid.Must(uuid.NewV4()).String()
+	pokeRes := new(md.PokeAPIResponse)
+	log.Info("Hello there", "trace-id: ", traceID)
+	err := GetJson("https://pokeapi.co/api/v2/pokemon", pokeRes, traceID)
+	if err != nil {
+		log.Printf("Error doing the request", "trace-id: ", traceID)
+	}
+	data, err := json.Marshal(pokeRes)
 
-	if err != nil {
-		log.Printf("Error doing the request")
-	}
-	err = json.NewDecoder(response.Body).Decode(&pokeRes)
-	if err != nil {
-		log.Printf("Error reading the body")
-	}
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(pokeRes)
+	SendJsonResponse(data, w, traceID)
 }

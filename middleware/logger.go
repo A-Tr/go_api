@@ -1,27 +1,21 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
-	"time"
 
 	"github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 )
 
-func LoggerMiddleware(inner http.Handler, name string) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		traceID := uuid.Must(uuid.NewV4())
+type Adapter func(http.Handler) http.Handler
 
-		inner.ServeHTTP(w, r)
-		log.Print("HOLI")
-		log.Printf(
-			"%s\t%s\t%s\t%s\t%s",
-			r.Method,
-			r.RequestURI,
-			name,
-			time.Since(start),
-			traceID.String(),
-		)
-	})
+func LoggerMiddleware(logger *log.Logger) Adapter {
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			traceID := uuid.Must(uuid.NewV4()).String()
+			w.Header().Set("traceId", traceID)
+			logger.Info("Soy el middleware", traceID)
+			h.ServeHTTP(w, r)
+		})
+	}
 }

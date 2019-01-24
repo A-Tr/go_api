@@ -1,10 +1,12 @@
 package api
 
 import (
+	hd "go_api/handlers"
 	mw "go_api/middleware"
 	"net/http"
+
 	"github.com/gorilla/mux"
-	hd "go_api/handlers"
+	log "github.com/sirupsen/logrus"
 )
 
 type Route struct {
@@ -16,20 +18,18 @@ type Route struct {
 
 type Routes []Route
 
-
 func NewRouter() *mux.Router {
-
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
-			var handler http.Handler
-
-			handler = route.HandlerFunc
-			handler = mw.LoggerMiddleware(handler, route.Name)
-			router.
-					Methods(route.Method).
-					Path(route.Pattern).
-					Name(route.Name).
-					Handler(route.HandlerFunc)
+		var handler http.Handler
+		logger:= log.New()
+		handler = route.HandlerFunc
+		handler = mw.LoggerMiddleware(logger)(handler)
+		router.
+			Methods(route.Method).
+			Path(route.Pattern).
+			Name(route.Name).
+			Handler(route.HandlerFunc)
 	}
 
 	return router
@@ -37,9 +37,9 @@ func NewRouter() *mux.Router {
 
 var routes = Routes{
 	Route{
-			"Index",
-			"GET",
-			"/",
-			hd.GetAllPokemons,
+		"Index",
+		"GET",
+		"/",
+		hd.GetAllPokemons,
 	},
 }
